@@ -6,8 +6,9 @@ import {
     createRequest,
     getClassrooms,
     getMyRequests,
-    approveRequest, // **** NUEVA IMPORTACIÓN ****
-    rejectRequest  // **** NUEVA IMPORTACIÓN ****
+    approveRequest, 
+    rejectRequest,
+    createBooking
 } from '../controllers/dataControllers.ts'; 
 import { requireAuth, requireSecretaria } from '../middlewares/authMiddleware.ts';
 
@@ -20,10 +21,11 @@ router.get('/requests', requireAuth, requireSecretaria, getAllRequests);
 router.get('/classrooms', requireAuth, getClassrooms);
 router.get('/requests/my', requireAuth, getMyRequests);
 
-// --- RUTA POST ---
+// --- RUTAS POST ---
 router.post('/requests', requireAuth, createRequest);
+router.post('/bookings', requireAuth, requireSecretaria, createBooking);
 
-// --- NUEVAS RUTAS PUT ---
+// --- RUTAS PUT ---
 router.put('/requests/:id/approve', requireAuth, requireSecretaria, approveRequest);
 router.put('/requests/:id/reject', requireAuth, requireSecretaria, rejectRequest);
 

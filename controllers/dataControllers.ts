@@ -182,6 +182,34 @@ export const rejectRequest = async (req: AuthenticatedRequest, res: Response) =>
     }
 };
 
+
+// POST /api/bookings (Crear Reserva Directa)
+export const createBooking = async (req: AuthenticatedRequest, res: Response) => {
+    // El usuario que crea es Secretaría (verificado por middleware)
+    // El 'userId' del body es el *Docente* al que se le asigna la clase
+    const { classroomId, userId, subject, career, startTime, endTime } = req.body;
+
+    if (!classroomId || !userId || !subject || !career || !startTime || !endTime) {
+        return res.status(400).json({ message: 'Campos obligatorios de la reserva faltantes.' });
+    }
+
+    try {
+        const result: QueryResult<BookingDB> = await db.query(
+            'INSERT INTO "Booking" (classroomid, userid, subject, career, starttime, endtime) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [classroomId, userId, subject, career, startTime, endTime]
+        );
+        
+        res.status(201).json({ 
+            message: 'Reserva creada con éxito.',
+            booking: result.rows[0] // Devolvemos la reserva creada
+        });
+
+    } catch (error) {
+        console.error('Error al crear reserva directa:', error);
+        res.status(500).json({ message: 'Error interno del servidor al crear reserva.' });
+    }
+};
+
 // Helper para mapear antes de enviar al frontend (opcional pero buena práctica)
 const mapRequestToFrontend = (dbReq: any): RequestDB => {
     return {
