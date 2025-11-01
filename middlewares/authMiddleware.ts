@@ -15,6 +15,11 @@ export const requireAuth = (req: AuthenticatedRequest, res: Response, next: Next
 
     const token = authHeader.split(' ')[1];
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+        return res.status(500).json({ message: 'Error interno: Secreto JWT no configurado.' });
+    }
+
     try {
         // 2. Verificar el token usando su secreto JWT
         const decoded = jwt.verify(token, process.env.JWT_SECRET!);

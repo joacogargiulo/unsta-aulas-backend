@@ -2,7 +2,7 @@
 import type { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db } from '../db.ts'; // Importa el cliente de DB
+import { db } from '../db.js'; // Importa el cliente de DB
 import type { QueryResult } from 'pg';
 
 // Interfaz para el usuario (opcional, pero buena práctica con TS)

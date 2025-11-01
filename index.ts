@@ -5,11 +5,11 @@ import 'dotenv/config'; // Importa las variables de entorno del archivo .env
 import cors from 'cors'; // Para permitir peticiones desde el frontend de React
 
 // Rutas
-import authRoutes from './routes/authRoutes.ts';
-import dataRoutes from './routes/dataRoutes.ts'; 
+import authRoutes from './routes/authRoutes.js';
+import dataRoutes from './routes/dataRoutes.js'; 
 
 // Conexión a la base de datos
-import { db } from './db.ts'; 
+import { db } from './db.js'; 
 
 const app = express();
 // Configura el puerto. Usará el del archivo .env o 3001 por defecto

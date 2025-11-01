@@ -1,6 +1,6 @@
 // db.ts
 import { Pool } from 'pg';
-import type { QueryResult } from 'pg'; 
+import type { QueryResult, QueryResultRow } from 'pg'; 
 import 'dotenv/config'; 
 
 const pool = new Pool({
@@ -13,7 +13,7 @@ const pool = new Pool({
 });
 
 export const db = {
-  query: <T>(text: string, params?: any[]): Promise<QueryResult<T>> => {
+  query: <T extends QueryResultRow>(text: string, params?: any[]): Promise<QueryResult<T>> => {
     return pool.query(text, params);
   },
 };

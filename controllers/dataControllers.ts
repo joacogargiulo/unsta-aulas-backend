@@ -1,8 +1,8 @@
 import type { Response } from 'express';
 // FIX: Importamos 'pool' (default) y 'db' (named)
-import { db } from '../db.ts';
-import pool from '../db.ts'; 
-import type { AuthenticatedRequest } from '../middlewares/authMiddleware.ts';
+import { db } from '../db.js';
+import pool from '../db.js'; 
+import type { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 import type { QueryResult } from 'pg';
 
 // --- INTERFACES (Sin cambios) ---

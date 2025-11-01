@@ -9,7 +9,7 @@ import {
     approveRequest, 
     rejectRequest,
     createBooking
-} from '../controllers/dataControllers.ts'; 
+} from '../controllers/dataControllers.js'; 
 import { requireAuth, requireSecretaria } from '../middlewares/authMiddleware.ts';
 
 const router = Router();
