@@ -39,3 +39,11 @@ export const requireAuth = (req: AuthenticatedRequest, res: Response, next: Next
         return res.status(401).json({ message: 'Token inválido o expirado.' });
     }
 };
+
+// Middleware para verificar si el usuario es Secretaría
+export const requireSecretaria = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (req.user?.role !== 'secretaria') {
+        return res.status(403).json({ message: 'Acceso denegado. Se requiere rol de Secretaría.' });
+    }
+    next();
+};
