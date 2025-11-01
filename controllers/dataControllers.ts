@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 // FIX: Importamos 'pool' (default) y 'db' (named)
 import { db } from '../db.js';
-import pool from '../db.js'; 
+import pool from '../db.js';
 import type { AuthenticatedRequest } from '../middlewares/authMiddleware.js';
 import type { QueryResult } from 'pg';
 
@@ -9,7 +9,7 @@ import type { QueryResult } from 'pg';
 interface BookingDB {
     id: number;
     classroomid: number;
-    userid: number; 
+    userid: number;
     subject: string;
     career: string;
     starttime: string | Date;
@@ -17,7 +17,7 @@ interface BookingDB {
 }
 interface RequestDB {
     id: number;
-    userid: number; 
+    userid: number;
     subject: string;
     career: string;
     starttime: string | Date;
@@ -34,7 +34,7 @@ interface ClassroomDB {
     hasprojector: boolean;
     studentcomputers: number;
     hasairconditioning: boolean;
-    faculty: string; 
+    faculty: string;
 }
 
 // --- FUNCIONES GET (Sin cambios) ---
@@ -52,7 +52,7 @@ export const getMyBookings = async (req: AuthenticatedRequest, res: Response) =>
     const userId = req.user?.id;
     if (!userId) { return res.status(401).json({ message: 'Usuario no autenticado.' }); }
     try {
-        const result: QueryResult<BookingDB> = await db.query( 'SELECT * FROM "Booking" WHERE userid = $1', [userId]);
+        const result: QueryResult<BookingDB> = await db.query('SELECT * FROM "Booking" WHERE userid = $1', [userId]);
         res.json(result.rows);
     } catch (error) {
         console.error('Error al obtener mis reservas:', error);
@@ -71,7 +71,7 @@ export const getAllRequests = async (req: AuthenticatedRequest, res: Response) =
 };
 
 export const createRequest = async (req: AuthenticatedRequest, res: Response) => {
-    const userId = req.user?.id; 
+    const userId = req.user?.id;
     const { subject, career, startTime, endTime, reason, requestedClassroomId } = req.body;
     if (!userId || !subject || !career || !startTime || !endTime) {
         return res.status(400).json({ message: 'Campos obligatorios de la solicitud faltantes.' });
@@ -79,7 +79,7 @@ export const createRequest = async (req: AuthenticatedRequest, res: Response) =>
     try {
         const result: QueryResult<RequestDB> = await db.query(
             'INSERT INTO "ClassroomRequest" (userid, subject, career, starttime, endtime, reason, status, requestedclassroomid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-            [userId, subject, career, startTime, endTime, reason || null, 'Pendiente', requestedClassroomId || null] 
+            [userId, subject, career, startTime, endTime, reason || null, 'Pendiente', requestedClassroomId || null]
         );
         res.status(201).json({ message: 'Solicitud creada con éxito.', request: result.rows[0] });
     } catch (error) {
@@ -99,11 +99,11 @@ export const getClassrooms = async (req: AuthenticatedRequest, res: Response) =>
 };
 
 export const getMyRequests = async (req: AuthenticatedRequest, res: Response) => {
-    const userId = req.user?.id; 
+    const userId = req.user?.id;
     if (!userId) { return res.status(401).json({ message: 'Usuario no autenticado.' }); }
     try {
-        const result: QueryResult<RequestDB> = await db.query( 'SELECT * FROM "ClassroomRequest" WHERE userid = $1 ORDER BY starttime DESC', [userId]);
-        res.json(result.rows); 
+        const result: QueryResult<RequestDB> = await db.query('SELECT * FROM "ClassroomRequest" WHERE userid = $1 ORDER BY starttime DESC', [userId]);
+        res.json(result.rows);
     } catch (error) {
         console.error('Error al obtener mis solicitudes:', error);
         res.status(500).json({ message: 'Error interno del servidor.' });
@@ -139,7 +139,10 @@ export const approveRequest = async (req: AuthenticatedRequest, res: Response) =
         }
 
         const request = updateResult.rows[0];
-
+        if (!request) {
+            await client.query('ROLLBACK');
+            return res.status(500).json({ message: 'Error al recuperar la solicitud después de actualizar.' });
+        }
         // 2. Crear la reserva (Booking)
         await client.query(
             'INSERT INTO "Booking" (classroomid, userid, subject, career, starttime, endtime) VALUES ($1, $2, $3, $4, $5, $6)',
@@ -147,11 +150,11 @@ export const approveRequest = async (req: AuthenticatedRequest, res: Response) =
         );
 
         await client.query('COMMIT'); // Confirmar transacción
-        
+
         res.status(200).json({ message: 'Solicitud aprobada y reserva creada.', request: mapRequestToFrontend(request) });
 
     } catch (error) {
-        await client.query('ROLLBACK'); 
+        await client.query('ROLLBACK');
         console.error('Error al aprobar solicitud:', error);
         res.status(500).json({ message: 'Error interno del servidor.' });
     } finally {
@@ -198,8 +201,8 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response) =>
             'INSERT INTO "Booking" (classroomid, userid, subject, career, starttime, endtime) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
             [classroomId, userId, subject, career, startTime, endTime]
         );
-        
-        res.status(201).json({ 
+
+        res.status(201).json({
             message: 'Reserva creada con éxito.',
             booking: result.rows[0] // Devolvemos la reserva creada
         });
@@ -214,15 +217,15 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response) =>
 const mapRequestToFrontend = (dbReq: any): RequestDB => {
     return {
         id: dbReq.id,
-        userid: dbReq.userid, 
+        userid: dbReq.userid,
         subject: dbReq.subject,
         career: dbReq.career,
-        starttime: new Date(dbReq.starttime), 
-        endtime: new Date(dbReq.endtime), 
+        starttime: new Date(dbReq.starttime),
+        endtime: new Date(dbReq.endtime),
         reason: dbReq.reason,
         status: dbReq.status,
-        requestedclassroomid: dbReq.requestedclassroomid, 
-        assignedclassroomid: dbReq.assignedclassroomid 
+        requestedclassroomid: dbReq.requestedclassroomid,
+        assignedclassroomid: dbReq.assignedclassroomid
     };
 };
 

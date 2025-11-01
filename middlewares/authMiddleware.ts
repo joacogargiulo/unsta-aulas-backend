@@ -22,7 +22,7 @@ export const requireAuth = (req: AuthenticatedRequest, res: Response, next: Next
 
     try {
         // 2. Verificar el token usando su secreto JWT
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+        const decoded = jwt.verify(token, jwtSecret); 
         
         // 3. Adjuntar la información del usuario al objeto de solicitud
         req.user = decoded as AuthenticatedRequest['user'];

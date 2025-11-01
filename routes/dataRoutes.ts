@@ -10,7 +10,7 @@ import {
     rejectRequest,
     createBooking
 } from '../controllers/dataControllers.js'; 
-import { requireAuth, requireSecretaria } from '../middlewares/authMiddleware.ts';
+import { requireAuth, requireSecretaria } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 

@@ -31,12 +31,18 @@ export const login = async (req: Request, res: Response) => {
         }
 
         // 2. Comparar la contraseña (PASSWORD vs HASH)
-        const isMatch = await bcrypt.compare(password, user.password); 
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: 'Credenciales inválidas.' });
         }
 
         // 3. Generar JWT
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            console.error("Error fatal: JWT_SECRET no está configurado en el servidor.");
+            return res.status(500).json({ message: 'Error interno: Secreto JWT no configurado.' });
+        }
+
         const token = jwt.sign(
             { id: user.id, role: user.role, email: user.email }, // Datos a guardar en el token
             process.env.JWT_SECRET!, // El secreto definido en .env
@@ -46,9 +52,9 @@ export const login = async (req: Request, res: Response) => {
         // 4. Devolver la respuesta al frontend (incluyendo el token)
         // Eliminamos el hash de la contraseña antes de enviarlo
         const { password: _, ...userPayload } = user;
-        
-        res.json({ 
-            token, 
+
+        res.json({
+            token,
             user: userPayload // Datos del usuario sin la contraseña
         });
 
@@ -73,7 +79,7 @@ export const register = async (req: Request, res: Response) => {
         // 1. Verificar si el email ya existe en la DB
         // (Asumimos que la columna 'email' es minúscula, como el resto)
         const existingUser = await db.query('SELECT id FROM "User" WHERE email = $1', [email]);
-        
+
         if (existingUser.rows.length > 0) {
             return res.status(409).json({ message: 'El correo electrónico ya está en uso.' });
         }
@@ -88,13 +94,13 @@ export const register = async (req: Request, res: Response) => {
             'INSERT INTO "User" (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
             [name, email, hashedPassword, role]
         );
-        
+
         const newUser = newUserResult.rows[0];
 
         // 4. Devolver éxito
-        res.status(201).json({ 
+        res.status(201).json({
             message: 'Registro exitoso.',
-            user: newUser 
+            user: newUser
         });
 
     } catch (error) {
